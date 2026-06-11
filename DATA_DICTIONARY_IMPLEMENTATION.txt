@@ -1,0 +1,50 @@
+TRACKPOINT DATA DICTIONARY IMPLEMENTATION
+=========================================
+
+This file identifies where each documented validation rule is enforced.
+
+FIELD / RULE                         USER INTERFACE            PYTHON VALIDATION          SQLITE PROTECTION
+------------------------------------------------------------------------------------------------------------
+Username 3-20 chars                  Users/Login pages         validation.py              CHECK/trigger + UNIQUE
+Username letters/numbers/_           Users/Login pages         validation.py              trigger
+Password 6-20 chars                  Users/Login pages         validation.py              hash stored only
+Password hash exactly 64 chars       not directly editable     database.py                CHECK/trigger
+Role Admin/Staff/Student             read-only dropdown        validation.py              CHECK/trigger
+Student competitor link required     Users page                database.py                trigger + foreign key
+One Student per competitor           Users page error          database.py                partial UNIQUE index
+Competitor name 1-50 chars           Competitors page          validation.py              CHECK/trigger
+Name letters/spaces only              Competitors page          validation.py              validated before INSERT
+Year group 7-12                      read-only dropdown        validation.py              CHECK/trigger
+House fixed to four EBHS houses      read-only dropdown        validation.py              CHECK/trigger
+Event name 1-40 chars                Events page               validation.py              CHECK/trigger
+Event type Track/Field               read-only dropdown        validation.py              CHECK/trigger
+Age group 1-10 alphanumeric          Events page               validation.py              CHECK/trigger
+Placing 1-8                          Results page              validation.py              CHECK/trigger
+Result value 1-15 chars              Results page              validation.py              CHECK/trigger
+Track unit = s / Field unit = m      Results page message      validation.py              validated before INSERT
+Automatic points                     not manually entered      database.py                trigger checks placing/points
+Duplicate event result blocked       Results page error        database.py                UNIQUE(event_id, competitor_id)
+Search maximum 50 chars              Competitors page          validation.py              no database storage
+Foreign keys                         linked drop-down values    database.py                PRAGMA foreign_keys = ON
+
+TESTED
+- Source files compile successfully.
+- Clean database creation succeeds.
+- Valid competitor, event and result data save successfully.
+- Invalid maximum lengths are rejected.
+- Invalid result units are rejected.
+- Duplicate results are rejected.
+- Duplicate Student-to-competitor links are rejected.
+- Data remains after closing and reopening the database.
+- SQL backup creation succeeds.
+
+FINAL IMPLEMENTATION UPDATE
+---------------------------
+The final version also applies the same data-dictionary validation rules to SQL UPDATE
+operations. Admin users can update competitors, events and results. Updated results
+recalculate points automatically. The event type cannot be changed between Track and
+Field while linked results exist because this would make stored measurement units invalid.
+
+The supplied quality dataset contains 16 fictional competitors, 8 events and 32 results.
+This ensures all four houses, multiple year groups, Track and Field units, placings and
+leaderboard calculations can be demonstrated immediately.
